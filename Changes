@@ -2,6 +2,7 @@ Revision history for Perl extension PHP::Session
 
 0.08  Tue Jun  4 00:08:40 JST 2002
 	* now this module can create session file, with { create => 1 } option
+	  (Thanks to Andy Lester and Thomas Eibner)
 
 0.07  Sat Apr  6 17:44:38 JST 2002
 	- uses File::Spec for portablity
