@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = 0.15;
+$VERSION = 0.16;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -14,20 +14,22 @@ sub new {
 }
 
 my $var_re = '(\w+)\|';
-my $str_re = 's:\d+:"(.*?)";';
+#my $str_re = 's:\d+:"(.*?)";';
+my $str_re = 's:(\d+):';
 my $int_re = 'i:(-?\d+);';
 my $dbl_re = 'd:(-?\d+(?:\.\d+)?);';
 my $arr_re = 'a:(\d+):';
-my $obj_re = 'O:\d+:"(.*?)":\d+:';
+#my $obj_re = 'O:\d+:"(.*?)":\d+:';
+my $obj_re = 'O:(\d+):';
 my $nul_re = '(N);';
 my $bool_re = 'b:([01]);';
 
 use constant VARNAME   => 0;
-use constant STRING    => 1;
+use constant STRLEN    => 1;
 use constant INTEGER   => 2;
 use constant DOUBLE    => 3;
 use constant ARRAY     => 4;
-use constant CLASSNAME => 5;
+use constant CLASSLEN  => 5;
 use constant NULL      => 6;
 use constant BOOLEAN   => 7;
 
@@ -36,12 +38,29 @@ sub decode {
     while ($data and $data =~ s/^(!?)$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)?//s) {
 	my $UNDEF = $1;
 	my @match = ($2, $3, $4, $5, $6, $7, $8, $9);
-	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
+
+	# literal: integer, double, boolean
+	my @literal = grep defined, @match[INTEGER, DOUBLE, BOOLEAN];
 	@literal and $self->{_data}->{$match[VARNAME]} = $literal[0], next;
 
+	# string
+	if (my $len = $match[STRLEN]) {
+	    $data =~ s/^"(.{$len})";// or die "weird data: $data";
+	    $self->{_data}->{$match[VARNAME]} = $1;
+	    next;
+	}
+
+	# undef or NULL
 	if ($UNDEF eq '!' or defined $match[NULL]) {
 	    $self->{_data}->{$match[VARNAME]} = undef;
 	    next;
+	}
+
+	# nested: array, object
+	my $class_name;
+	if (my $len = $match[CLASSLEN]) {
+	    $data =~ s/^"(.{$len})":\d+:// or die "weird data: $data";
+	    $class_name = $1;
 	}
 
 	my $bracket = extract_bracketed($data, '{}');
@@ -49,9 +68,9 @@ sub decode {
 	if (defined $match[ARRAY]) {
 	    $self->{_data}->{$match[VARNAME]} = \%data;
 	}
-	elsif (defined $match[CLASSNAME]) {
+	elsif (defined $class_name) {
 	    $self->{_data}->{$match[VARNAME]} = bless {
-		_class => $match[CLASSNAME],
+		_class => $class_name,
 		%data,
 	    }, 'PHP::Session::Object';
 	}
@@ -65,12 +84,29 @@ sub do_decode {
     my @data;
     while ($data and $data =~ s/^($str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
 	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
-	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
+
+	# literal: integer, double. boolean
+	my @literal = grep defined, @match[INTEGER, DOUBLE, BOOLEAN];
 	@literal and push @data, $literal[0] and next;
 
+	# string
+	if (my $len = $match[STRLEN]) {
+	    $data =~ s/^"(.{$len})";// or die "weird data: $data";
+	    push @data, $1;
+	    next;
+	}
+
+	# NULL
 	if (defined $match[NULL]) {
 	    push @data, undef;
 	    next;
+	}
+
+	# nexted: array, object
+	my $class_name;
+	if (my $len = $match[CLASSLEN]) {
+	    $data =~ s/^"(.{$len})":\d+:// or die "weird data: $data";
+	    $class_name = $1;
 	}
 
 	my $bracket = extract_bracketed($data, '{}');
@@ -78,9 +114,9 @@ sub do_decode {
 	if (defined $match[ARRAY]) {
 	    push @data, \%data;
 	}
-	elsif (defined $match[CLASSNAME]) {
+	elsif (defined $class_name) {
 	    push @data, bless {
-		_class => $match[CLASSNAME],
+		_class => $class_name,
 		%data,
 	    }, 'PHP::Session::Object';
 	}
@@ -107,10 +143,12 @@ sub do_encode {
 	return $self->encode_null($value);
     }
     elsif (! ref $value) {
-	if ($value =~ /^-?\d+$/) {
+#	if ($value =~ /^-?\d+$/) {
+	if (is_int($value)) {
 	    return $self->encode_int($value);
 	}
-	elsif ($value =~ /^-?\d+(?:\.\d+)?$/) {
+#	elsif ($value =~ /^-?\d+(?:\.\d+)?$/) {
+	elsif (is_float($value)) {
 	    return $self->encode_double($value);
 	}
 	else {
@@ -163,6 +201,16 @@ sub encode_object {
     my $class = delete $impl{_class};
     return sprintf 'O:%d:"%s":%d:{%s}', length($class), $class, 2 * (keys %impl),
 	join('', map $self->do_encode($_), %impl);
+}
+
+sub is_int {
+    local $_ = shift;
+    /^-?[0-9]\d{0,8}$/;
+}
+
+sub is_float {
+    local $_ = shift;
+    /^-?[0-9]\d{0,8}\.\d+$/;
 }
 
 1;

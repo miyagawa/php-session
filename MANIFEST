@@ -12,4 +12,8 @@ t/04_save.t
 t/05_create.t
 t/06_hash.t
 t/07_int_double.t
+t/08_auto_save.t
+t/09_int_str.t
+t/10_quote.t
 t/lib/TestUtil.pm
+t/sess_quote

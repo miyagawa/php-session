@@ -1,5 +1,10 @@
 Revision history for Perl extension PHP::Session
 
+0.16  Mon Feb 24 20:35:20 JST 2003
+	* Fixed bug that encodes strings like "20030224203445" as integer
+	  (Thanks to PIA)
+	* Fixed parser bug that string like qq(A\";B) is not restored corretly
+
 0.15  Tue Jan 28 23:22:38 JST 2003
 	* Added new auto_save option in constructor
 

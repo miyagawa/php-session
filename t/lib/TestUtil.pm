@@ -8,13 +8,13 @@ use FileHandle;
 
 sub write_file {
     my($file, $cont) = @_;
-    my $out = FileHandle->new("> $file");
+    my $out = FileHandle->new("> $file") or die "$file: $!";
     $out->print($cont);
 }
 
 sub read_file {
     my $file = shift;
-    my $in = FileHandle->new($file);
+    my $in = FileHandle->new($file) or die "$file: $!";
     local $/;
     my $cont = <$in>;
     return $cont;
