@@ -16,7 +16,7 @@ sub new {
 my $var_re = '(\w+)\|';
 my $str_re = 's:\d+:"(.*?)";';
 my $int_re = 'i:(-?\d+);';
-my $dbl_re = 'd:(-?[\d\.]+);';
+my $dbl_re = 'd:(-?\d+(?:\.\d+)?);';
 my $arr_re = 'a:(\d+):';
 my $obj_re = 'O:\d+:"(.*?)":\d+:';
 my $nul_re = '(N);';
@@ -110,7 +110,7 @@ sub do_encode {
 	if ($value =~ /^-?\d+$/) {
 	    return $self->encode_int($value);
 	}
-	elsif ($value =~ /^-?[\d\.]+$/) {
+	elsif ($value =~ /^-?\d+(?:\.\d+)?$/) {
 	    return $self->encode_double($value);
 	}
 	else {

@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.14  Wed Sep 18 17:02:16 JST 2002
+	* Fixed bug that "." is not encoded properly
+	  (Thanks to Tony Mattila)	
+
 0.13  Tue Jul 16 19:35:58 JST 2002
 	- improved documentation
 
