@@ -2,7 +2,7 @@ package PHP::Session::Serializer::PHP;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.18;
+$VERSION = 0.19;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -120,7 +120,9 @@ sub decode {
 
 sub change_state {
     my($self, $state) = @_;
-    $self->{state} = PHP::Session::Serializer::PHP::State->new($state);
+    $self->{state} = "PHP::Session::Serializer::PHP::State::$state"; # optimization
+#    $self->{state} = PHP::Session::Serializer::PHP::State->new($state);
+
 }
 
 sub set {
@@ -135,8 +137,7 @@ sub push_stack {
 
 sub pop_stack {
     my $self = shift;
-    my $val = pop @{$self->{stack}};
-    return $val;
+    pop @{$self->{stack}};
 }
 
 sub extract_stack {
@@ -214,15 +215,7 @@ sub weird {
     _croak("weird data: $self->{buffer}");
 }
 
-package PHP::Session::Serializer::PHP::State;
-
-sub new {
-    my($class, $name) = @_;
-    bless {}, "$class\::$name";
-}
-
 package PHP::Session::Serializer::PHP::State::VarName;
-use base qw(PHP::Session::Serializer::PHP::State);
 
 sub parse {
     my($self, $decoder) = @_;
@@ -236,50 +229,48 @@ sub parse {
 }
 
 package PHP::Session::Serializer::PHP::State::VarType;
-use base qw(PHP::Session::Serializer::PHP::State);
 
-my %re = (
-    string  => 's:(\d+):',
-    integer => 'i:(-?\d+);',
-    double  => 'd:(-?\d+(?:\.\d+)?);',
-    array   => 'a:(\d+):',
-    object  => 'O:(\d+):',
-    null    => '(N);',
-    boolean => 'b:([01]);',
+my @re = (
+    's:(\d+):',			# string
+    'i:(-?\d+);',		# integer
+    'd:(-?\d+(?:\.\d+)?);',	# double
+    'a:(\d+):',			# array
+    'O:(\d+):',			# object
+    '(N);',			# null
+    'b:([01]);',		# boolean
 );
 
 sub parse {
     my($self, $decoder) = @_;
-    my $re = join "|", @re{qw(string integer double array object null boolean)};
+    my $re = join "|", @re;
     $decoder->{buffer} =~ s/^(?:$re)// or $decoder->weird;
-    if (defined $1) {
+    if (defined $1) {		# string
 	$decoder->push_stack($1);
 	$decoder->change_state('String');
     }
-    elsif (defined $2) {
+    elsif (defined $2) {	# integer
 	$decoder->process_value($2);
     }
-    elsif (defined $3) {
+    elsif (defined $3) {	# double
 	$decoder->process_value($3);
     }
-    elsif (defined $4) {
+    elsif (defined $4) {	# array
 	$decoder->start_array($4);
 	$decoder->change_state('ArrayStart');
     }
-    elsif (defined $5) {
+    elsif (defined $5) {	# object
 	$decoder->push_stack($5);
 	$decoder->change_state('ClassName');
     }
-    elsif (defined $6) {
+    elsif (defined $6) {	# null
 	$decoder->process_value(undef);
     }
-    elsif (defined $7) {
+    elsif (defined $7) {	# boolean
 	$decoder->process_value($7);
     }
 }
 
 package PHP::Session::Serializer::PHP::State::String;
-use base qw(PHP::Session::Serializer::PHP::State);
 
 sub parse {
     my($self, $decoder) = @_;
@@ -289,7 +280,6 @@ sub parse {
 }
 
 package PHP::Session::Serializer::PHP::State::ArrayStart;
-use base qw(PHP::Session::Serializer::PHP::State);
 
 sub parse {
     my($self, $decoder) = @_;
@@ -302,7 +292,6 @@ sub parse {
 }
 
 package PHP::Session::Serializer::PHP::State::ArrayEnd;
-use base qw(PHP::Session::Serializer::PHP::State);
 
 sub parse {
     my($self, $decoder) = @_;
@@ -312,7 +301,6 @@ sub parse {
 }
 
 package PHP::Session::Serializer::PHP::State::ClassName;
-use base qw(PHP::Session::Serializer::PHP::State);
 
 sub parse {
     my($self, $decoder) = @_;

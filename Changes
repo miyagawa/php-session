@@ -1,7 +1,10 @@
 Revision history for Perl extension PHP::Session
 
+0.19  Tue Feb 25 19:21:10 JST 2003
+	- Optimized decoder using static method
+
 0.18  Tue Feb 25 18:42:40 JST 2003
-	- Fixed test fails due to 5.8 MakeMaker bug (warnings disabled by default)
+	- Fixed test failures due to 5.8 MakeMaker bug (warnings disabled by default)
 
 0.17  Tue Feb 25 16:43:05 JST 2003
 	* Fixed bug that fails to decode strings with "}" in it
@@ -11,7 +14,7 @@ Revision history for Perl extension PHP::Session
 0.16  Mon Feb 24 20:35:20 JST 2003
 	* Fixed bug that encodes strings like "20030224203445" as integer
 	  (Thanks to PIA)
-	* Fixed parser bug that string like qq(A\";B) is not restored corretly
+	* Fixed parser bug that string like qq(A\";B) is not restored correctly
 
 0.15  Tue Jan 28 23:22:38 JST 2003
 	* Added new auto_save option in constructor
