@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -168,6 +168,30 @@ PHP::Session - read / write PHP session files
 PHP::Session provides a way to read / write PHP4 session files, with
 which you can make your Perl application session shared with PHP4.
 
+If you like Apache::Session interface for session management, there is
+a glue for Apache::Session of this module, Apache::Session::PHP.
+
+=head1 OPTIONS
+
+Constructor C<new> takes some options as hashref.
+
+=over 4
+
+=item save_path
+
+path to directory where session files are stored. default: C</tmp>.
+
+=item serialize_handler
+
+type of serialization handler. Currently only PHP default
+serialization is supported.
+
+=item create
+
+whether to create session file, if it's not existent yet. default: 0
+
+=back
+
 =head1 NOTES
 
 =over 4
@@ -179,7 +203,8 @@ Array in PHP is hash in Perl.
 =item *
 
 Objects in PHP are restored as objects blessed into
-PHP::Session::Object (Null class).
+PHP::Session::Object (Null class) and original class name is stored in
+C<_class> key.
 
 =item *
 
@@ -188,7 +213,7 @@ PHP implementation.
 
 =item *
 
-Not tested so much, thus there may be a lot of bug in
+Not tested so much, thus there may be some bugs in
 (des|s)erialization code. If you find any, tell me via email.
 
 =back
