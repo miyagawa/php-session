@@ -20,10 +20,13 @@ SYNOPSIS
       $session->unset;
 
       # check if data is registered
-      $session->is_registerd('bar');
+      $session->is_registered('bar');
 
       # save session data
       $session->save;
+
+      # destroy session
+      $session->destroy;
 
 DESCRIPTION
     PHP::Session provides a way to read / write PHP4 session files, with
@@ -32,11 +35,14 @@ DESCRIPTION
 NOTES
     *   Array in PHP is hash in Perl.
 
-    *   Objects in PHP are deserialized as hash reference, blessed into
+    *   Objects in PHP are restored as objects blessed into
         PHP::Session::Object (Null class).
 
-    *   Locking when save()ing data is acquired via exclusive flock, same as
-        PHP implementation.
+    *   Locking when save()ing data is acquired via exclusive "flock", same
+        as PHP implementation.
+
+    *   Not tested so much, thus there may be a lot of bug in
+        (des|s)erialization code. If you find any, tell me via email.
 
 TODO
     *   WDDX support, using WDDX.pm
@@ -50,5 +56,5 @@ AUTHOR
     under the same terms as Perl itself.
 
 SEE ALSO
-    the WDDX manpage, the Apache::Session manpage
+    the WDDX manpage, the Apache::Session manpage, the CGI::kSession manpage
 

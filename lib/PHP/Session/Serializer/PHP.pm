@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = 0.05;
+$VERSION = 0.06;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -33,7 +33,7 @@ use constant BOOLEAN   => 7;
 
 sub decode {
     my($self, $data) = @_;
-    while ($data =~ s/^$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
+    while ($data and $data =~ s/^$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
 	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
 	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
 	@literal and $self->{_data}->{$match[VARNAME]} = $literal[0], next;
@@ -62,7 +62,7 @@ sub do_decode {
     my($self, $data) = @_;
     $data =~ s/^{(.*)}$/$1/;
     my @data;
-    while ($data =~ s/^($str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
+    while ($data and $data =~ s/^($str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
 	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
 	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
 	@literal and push @data, $literal[0] and next;
@@ -115,6 +115,9 @@ sub do_encode {
     elsif (ref $value eq 'HASH') {
 	return $self->encode_array($value);
     }
+    elsif (ref $value eq 'ARRAY') {
+	return $self->encode_array($value);
+    }
     elsif (ref $value eq 'PHP::Session::Object') {
 	return $self->encode_object($value);
     }
@@ -145,7 +148,8 @@ sub encode_string {
 
 sub encode_array {
     my($self, $value) = @_;
-    return sprintf 'a:%d:{%s}', 2 * (keys %$value), join('', map $self->do_encode($_), %$value);
+    my %array = ref $value eq 'HASH' ? %$value : map { $_ => $value->[$_] } 0..$#{$value};
+    return sprintf 'a:%d:{%s}', 2 * (keys %array), join('', map $self->do_encode($_), %array);
 }
 
 sub encode_object {
@@ -165,7 +169,12 @@ PHP::Session::Serializer::PHP - serialize / deserialize PHP session data
 
 =head1 SYNOPSIS
 
-B<DO NOT USE THIS MODULE DIRECTLY>.
+  use PHP::Session::Serializer::PHP;
+
+  $serializer = PHP::Session::Serializer::PHP->new;
+
+  $enc     = $serializer->encode(\%data);
+  $hashref = $serializer->decode($enc);
 
 =head1 TODO
 
@@ -174,6 +183,10 @@ B<DO NOT USE THIS MODULE DIRECTLY>.
 =item *
 
 clean up the code!
+
+=item *
+
+Add option to restore PHP object as is.
 
 =back
 

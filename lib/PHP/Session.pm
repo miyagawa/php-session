@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.05;
+$VERSION = 0.06;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -171,7 +171,7 @@ Array in PHP is hash in Perl.
 
 =item *
 
-Objects in PHP are restrored as objects blessed into
+Objects in PHP are restored as objects blessed into
 PHP::Session::Object (Null class).
 
 =item *

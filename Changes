@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.06  Wed Mar 27 01:57:06 JST 2002
+	* exposed Serializer API
+	* Added encoding: Perl array => PHP array
+
 0.05  Mon Mar 18 16:36:27 JST 2002
 	* added Boolean type (ext/var.h in PHP source code)
 
