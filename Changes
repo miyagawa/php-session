@@ -1,4 +1,7 @@
 Revision history for Perl extension PHP::Session
 
+0.02  Thu Mar 14 04:37:39 JST 2002
+	- added UNIVERSAL::require as PREREQ_PM
+
 0.01  Wed Mar 13 15:54:53 2002
 	- original version

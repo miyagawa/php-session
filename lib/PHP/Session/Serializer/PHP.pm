@@ -1,6 +1,10 @@
 package PHP::Session::Serializer::PHP;
+
 use strict;
 use Text::Balanced qw(extract_bracketed);
+
+use vars qw($VERSION);
+$VERSION = 0.02;
 
 sub new {
     my $class = shift;
