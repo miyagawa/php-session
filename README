@@ -1,0 +1,47 @@
+NAME
+    PHP::Session - read / write PHP session files
+
+SYNOPSIS
+      use PHP::Session;
+
+      my $session = PHP::Session->new($id);
+
+      # session id
+      my $id = $session->id;
+
+      # get/set session data
+      my $foo = $session->get('foo');
+      $session->set(bar => $bar);
+
+      # remove session data
+      $session->unregister('foo');
+
+      # remove all session data
+      $session->unset;
+
+      # check if data is registered
+      $session->is_registerd('bar');
+
+      # save session data (*UNIMPLEMENTED*)
+      $session->save;
+
+DESCRIPTION
+    PHP::Session provides a way to read / write PHP4 session files, with
+    which you can make your Perl applicatiion session shared with PHP4.
+
+TODO
+    *   saving session data into file is UNIMPLEMENTED.
+
+    *   WDDX support, using WDDX.pm
+
+    *   "Apache::Session::PHP"
+
+AUTHOR
+    Tatsuhiko Miyagawa <miyagawa@bulknews.net>
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+SEE ALSO
+    the WDDX manpage, the Apache::Session manpage
+

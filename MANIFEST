@@ -1,0 +1,9 @@
+Changes
+MANIFEST
+Makefile.PL
+README
+lib/PHP/Session.pm
+lib/PHP/Session/Serializer/PHP.pm
+t/00_compile.t
+t/01_deserialize.t
+t/lib/TestUtil.pm
