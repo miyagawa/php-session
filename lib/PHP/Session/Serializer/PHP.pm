@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -15,8 +15,8 @@ sub new {
 
 my $var_re = '(\w+)\|';
 my $str_re = 's:\d+:"(.*?)";';
-my $int_re = 'i:(\d+);';
-my $dbl_re = 'd:([\-\d\.]+);';
+my $int_re = 'i:(-?\d+);';
+my $dbl_re = 'd:(-?[\d\.]+);';
 my $arr_re = 'a:(\d+):';
 my $obj_re = 'O:\d+:"(.*?)":\d+:';
 my $nul_re = '(N);';
@@ -107,10 +107,10 @@ sub do_encode {
 	return $self->encode_null($value);
     }
     elsif (! ref $value) {
-	if ($value =~ /^\d+$/) {
+	if ($value =~ /^-?\d+$/) {
 	    return $self->encode_int($value);
 	}
-	elsif ($value =~ /^[\d\-\.]+$/) {
+	elsif ($value =~ /^-?[\d\.]+$/) {
 	    return $self->encode_double($value);
 	}
 	else {
@@ -143,7 +143,7 @@ sub encode_int {
 
 sub encode_double {
     my($self, $value) = @_;
-    return sprintf "d:%d;", $value;
+    return sprintf "d:%s;", $value; # XXX hack
 }
 
 sub encode_string {

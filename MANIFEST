@@ -11,4 +11,5 @@ t/03_methods.t
 t/04_save.t
 t/05_create.t
 t/06_hash.t
+t/07_int_double.t
 t/lib/TestUtil.pm
