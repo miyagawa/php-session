@@ -1,5 +1,10 @@
 Revision history for Perl extension PHP::Session
 
+0.12  Tue Jul 16 17:04:46 JST 2002
+	* Fixed bug in double serialization
+	* Fixed bug in double/string/int detection of Perl scalar
+	  (Thanks to Pasha Sadri, Thai Tran and Vincent C. Rubino)
+
 0.11  Wed Jul 10 05:23:19 JST 2002
 	* Fixed bug in hash/array serialization
 	  (Thanks to Pasha Sadri and Thai Tran)
