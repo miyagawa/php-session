@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = 0.03;
+$VERSION = 0.04;
 
 sub _croak { require Carp; Carp::croak(@_) }
 

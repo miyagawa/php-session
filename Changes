@@ -1,6 +1,9 @@
 Revision history for Perl extension PHP::Session
 
-0.03
+0.04  Fri Mar 15 16:14:32 JST 2002
+	* added destroy()
+
+0.03  Fri Mar 15 16:01:35 JST 2002
 	* added session ID validation
 	* implemented save()
 

@@ -35,7 +35,5 @@ for my $session (@sessions) {
     $php->save;
     my $php2 = PHP::Session->new($session->{sid}, { save_path => 't' });
     is_deeply $php, $php2;
+    $php->destroy;
 }
-
-
-END { unlink $_ for ('t/sess_1234', 't/sess_abcd'); }

@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.03;
+$VERSION = 0.04;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -81,6 +81,11 @@ sub save {
     $handle->close;
 }
 
+sub destroy {
+    my $self = shift;
+    unlink $self->_file_path;
+}
+
 # private methods
 
 sub _validate_sid {
@@ -148,6 +153,9 @@ PHP::Session - read / write PHP session files
   # save session data
   $session->save;
 
+  # destroy session
+  $session->destroy;
+
 =head1 DESCRIPTION
 
 PHP::Session provides a way to read / write PHP4 session files, with
@@ -170,6 +178,11 @@ PHP::Session::Object (Null class).
 
 Locking when save()ing data is acquired via exclusive flock, same as
 PHP implementation.
+
+=item *
+
+Not tested so much, thus there may be a lot of bug in
+(des|s)erialization code. If you find any, tell me via email.
 
 =back
 
@@ -196,6 +209,6 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<WDDX>, L<Apache::Session>
+L<WDDX>, L<Apache::Session>, L<CGI::kSession>
 
 =cut

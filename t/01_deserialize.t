@@ -31,6 +31,7 @@ write_file('t/sess_1234', $sess);
     is $arr->{3}->{_class}, 'foo';
     is $arr->{3}->{bar}, 'ok';
     is $arr->{3}->{yes}, 'done';
+    $session->destroy;
 }
 
 chomp(my $sess2 = <<'SESSION');
@@ -55,6 +56,7 @@ write_file('t/sess_abcd', $sess2);
     is $arr->{3}, 'bar';
     is $arr->{4}, -1.2;
     is $arr->{d}, undef;
+    $session->destroy;
 }
 
-END { unlink $_ for ('t/sess_1234', 't/sess_abcd'); }
+
