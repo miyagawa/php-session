@@ -1,128 +1,23 @@
 package PHP::Session::Serializer::PHP;
 
 use strict;
-use Text::Balanced qw(extract_bracketed);
-
 use vars qw($VERSION);
-$VERSION = 0.16;
+$VERSION = 0.17;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
 sub new {
     my $class = shift;
-    bless { _data => {} }, $class;
+    bless {
+	buffer => undef,
+	data   => {},
+	state  => undef,
+	stack  => [],
+	array  => [],		# array-ref of array-ref
+    }, $class;
 }
 
-my $var_re = '(\w+)\|';
-#my $str_re = 's:\d+:"(.*?)";';
-my $str_re = 's:(\d+):';
-my $int_re = 'i:(-?\d+);';
-my $dbl_re = 'd:(-?\d+(?:\.\d+)?);';
-my $arr_re = 'a:(\d+):';
-#my $obj_re = 'O:\d+:"(.*?)":\d+:';
-my $obj_re = 'O:(\d+):';
-my $nul_re = '(N);';
-my $bool_re = 'b:([01]);';
-
-use constant VARNAME   => 0;
-use constant STRLEN    => 1;
-use constant INTEGER   => 2;
-use constant DOUBLE    => 3;
-use constant ARRAY     => 4;
-use constant CLASSLEN  => 5;
-use constant NULL      => 6;
-use constant BOOLEAN   => 7;
-
-sub decode {
-    my($self, $data) = @_;
-    while ($data and $data =~ s/^(!?)$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)?//s) {
-	my $UNDEF = $1;
-	my @match = ($2, $3, $4, $5, $6, $7, $8, $9);
-
-	# literal: integer, double, boolean
-	my @literal = grep defined, @match[INTEGER, DOUBLE, BOOLEAN];
-	@literal and $self->{_data}->{$match[VARNAME]} = $literal[0], next;
-
-	# string
-	if (my $len = $match[STRLEN]) {
-	    $data =~ s/^"(.{$len})";// or die "weird data: $data";
-	    $self->{_data}->{$match[VARNAME]} = $1;
-	    next;
-	}
-
-	# undef or NULL
-	if ($UNDEF eq '!' or defined $match[NULL]) {
-	    $self->{_data}->{$match[VARNAME]} = undef;
-	    next;
-	}
-
-	# nested: array, object
-	my $class_name;
-	if (my $len = $match[CLASSLEN]) {
-	    $data =~ s/^"(.{$len})":\d+:// or die "weird data: $data";
-	    $class_name = $1;
-	}
-
-	my $bracket = extract_bracketed($data, '{}');
-	my %data    = $self->do_decode($bracket);
-	if (defined $match[ARRAY]) {
-	    $self->{_data}->{$match[VARNAME]} = \%data;
-	}
-	elsif (defined $class_name) {
-	    $self->{_data}->{$match[VARNAME]} = bless {
-		_class => $class_name,
-		%data,
-	    }, 'PHP::Session::Object';
-	}
-    }
-    return $self->{_data};
-}
-
-sub do_decode {
-    my($self, $data) = @_;
-    $data =~ s/^{(.*)}$/$1/s;
-    my @data;
-    while ($data and $data =~ s/^($str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
-	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
-
-	# literal: integer, double. boolean
-	my @literal = grep defined, @match[INTEGER, DOUBLE, BOOLEAN];
-	@literal and push @data, $literal[0] and next;
-
-	# string
-	if (my $len = $match[STRLEN]) {
-	    $data =~ s/^"(.{$len})";// or die "weird data: $data";
-	    push @data, $1;
-	    next;
-	}
-
-	# NULL
-	if (defined $match[NULL]) {
-	    push @data, undef;
-	    next;
-	}
-
-	# nexted: array, object
-	my $class_name;
-	if (my $len = $match[CLASSLEN]) {
-	    $data =~ s/^"(.{$len})":\d+:// or die "weird data: $data";
-	    $class_name = $1;
-	}
-
-	my $bracket = extract_bracketed($data, '{}');
-	my %data    = $self->do_decode($bracket);
-	if (defined $match[ARRAY]) {
-	    push @data, \%data;
-	}
-	elsif (defined $class_name) {
-	    push @data, bless {
-		_class => $class_name,
-		%data,
-	    }, 'PHP::Session::Object';
-	}
-    }
-    return @data;
-}
+# encoder starts here
 
 sub encode {
     my($self, $data) = @_;
@@ -143,11 +38,9 @@ sub do_encode {
 	return $self->encode_null($value);
     }
     elsif (! ref $value) {
-#	if ($value =~ /^-?\d+$/) {
 	if (is_int($value)) {
 	    return $self->encode_int($value);
 	}
-#	elsif ($value =~ /^-?\d+(?:\.\d+)?$/) {
 	elsif (is_float($value)) {
 	    return $self->encode_double($value);
 	}
@@ -199,7 +92,7 @@ sub encode_object {
     my($self, $value) = @_;
     my %impl = %$value;
     my $class = delete $impl{_class};
-    return sprintf 'O:%d:"%s":%d:{%s}', length($class), $class, 2 * (keys %impl),
+    return sprintf 'O:%d:"%s":%d:{%s}', length($class), $class, scalar(keys %impl),
 	join('', map $self->do_encode($_), %impl);
 }
 
@@ -212,6 +105,223 @@ sub is_float {
     local $_ = shift;
     /^-?[0-9]\d{0,8}\.\d+$/;
 }
+
+# decoder starts here
+
+sub decode {
+    my($self, $data) = @_;
+    $self->{buffer} = $data;
+    $self->change_state('VarName');
+    while (defined $self->{buffer} && length $self->{buffer}) {
+	$self->{state}->parse($self);
+    }
+    return $self->{data};
+}
+
+sub change_state {
+    my($self, $state) = @_;
+    $self->{state} = PHP::Session::Serializer::PHP::State->new($state);
+}
+
+sub set {
+    my($self, $key, $value) = @_;
+    $self->{data}->{$key} = $value;
+}
+
+sub push_stack {
+    my($self, $stuff) = @_;
+    push @{$self->{stack}}, $stuff;
+}
+
+sub pop_stack {
+    my $self = shift;
+    my $val = pop @{$self->{stack}};
+    return $val;
+}
+
+sub extract_stack {
+    my($self, $num) = @_;
+    return $num ? splice(@{$self->{stack}}, -$num) : ();
+}
+
+# array: [ [ $length, $consuming, $class ], [ $length, $consuming, $class ]  .. ]
+
+sub start_array {
+    my($self, $length, $class) = @_;
+    unshift @{$self->{array}}, [ $length, 0, $class ];
+}
+
+sub in_array {
+    my $self = shift;
+    return scalar @{$self->{array}};
+}
+
+sub consume_array {
+    my $self = shift;
+    $self->{array}->[0]->[1]++;
+}
+
+sub finished_array {
+    my $self = shift;
+    return $self->{array}->[0]->[0] * 2 == $self->{array}->[0]->[1];
+}
+
+sub elements_count {
+    my $self = shift;
+    return $self->{array}->[0]->[0];
+}
+
+sub process_value {
+    my($self, $value, $empty_skip) = @_;
+    if ($self->in_array()) {
+	unless ($empty_skip) {
+	    $self->push_stack($value);
+	    $self->consume_array();
+	}
+	if ($self->finished_array()) {
+	    # just finished array
+	    my $array  = shift @{$self->{array}}; # shift it
+	    my @values = $self->extract_stack($array->[0] * 2);
+	    my $class  = $array->[2];
+	    if (defined $class) {
+		# object
+		my $real_value = bless {
+		    _class => $class,
+		    @values,
+		}, 'PHP::Session::Object';
+		$self->process_value($real_value);
+	    } else {
+		# array is hash
+		$self->process_value({ @values });
+	    }
+	    $self->change_state('ArrayEnd');
+	    $self->{state}->parse($self);
+	} else {
+	    # not yet finished
+	    $self->change_state('VarType');
+	}
+    }
+    else {
+	# not in array
+	my $varname = $self->pop_stack;
+	$self->set($varname => $value);
+	$self->change_state('VarName');
+    }
+}
+
+sub weird {
+    my $self = shift;
+    _croak("weird data: $self->{buffer}");
+}
+
+package PHP::Session::Serializer::PHP::State;
+
+sub new {
+    my($class, $name) = @_;
+    bless {}, "$class\::$name";
+}
+
+package PHP::Session::Serializer::PHP::State::VarName;
+use base qw(PHP::Session::Serializer::PHP::State);
+
+sub parse {
+    my($self, $decoder) = @_;
+    $decoder->{buffer} =~ s/^(!?)(.*?)\|// or $decoder->weird;
+    if ($1) {
+	$decoder->set($2 => undef);
+    } else {
+	$decoder->push_stack($2);
+	$decoder->change_state('VarType');
+    }
+}
+
+package PHP::Session::Serializer::PHP::State::VarType;
+use base qw(PHP::Session::Serializer::PHP::State);
+
+my %re = (
+    string  => 's:(\d+):',
+    integer => 'i:(-?\d+);',
+    double  => 'd:(-?\d+(?:\.\d+)?);',
+    array   => 'a:(\d+):',
+    object  => 'O:(\d+):',
+    null    => '(N);',
+    boolean => 'b:([01]);',
+);
+
+sub parse {
+    my($self, $decoder) = @_;
+    my $re = join "|", @re{qw(string integer double array object null boolean)};
+    $decoder->{buffer} =~ s/^(?:$re)// or $decoder->weird;
+    if (defined $1) {
+	$decoder->push_stack($1);
+	$decoder->change_state('String');
+    }
+    elsif (defined $2) {
+	$decoder->process_value($2);
+    }
+    elsif (defined $3) {
+	$decoder->process_value($3);
+    }
+    elsif (defined $4) {
+	$decoder->start_array($4);
+	$decoder->change_state('ArrayStart');
+    }
+    elsif (defined $5) {
+	$decoder->push_stack($5);
+	$decoder->change_state('ClassName');
+    }
+    elsif (defined $6) {
+	$decoder->process_value(undef);
+    }
+    elsif (defined $7) {
+	$decoder->process_value($7);
+    }
+}
+
+package PHP::Session::Serializer::PHP::State::String;
+use base qw(PHP::Session::Serializer::PHP::State);
+
+sub parse {
+    my($self, $decoder) = @_;
+    my $length = $decoder->pop_stack();
+    $decoder->{buffer} =~ s/^"(.{$length})";// or $decoder->weird;
+    $decoder->process_value($1);
+}
+
+package PHP::Session::Serializer::PHP::State::ArrayStart;
+use base qw(PHP::Session::Serializer::PHP::State);
+
+sub parse {
+    my($self, $decoder) = @_;
+    $decoder->{buffer} =~ s/^{// or $decoder->weird;
+    if ($decoder->elements_count) {
+	$decoder->change_state('VarType');
+    } else {
+	$decoder->process_value(undef, 1);
+    }
+}
+
+package PHP::Session::Serializer::PHP::State::ArrayEnd;
+use base qw(PHP::Session::Serializer::PHP::State);
+
+sub parse {
+    my($self, $decoder) = @_;
+    $decoder->{buffer} =~ s/^}// or $decoder->weird;
+    my $next_state = $decoder->in_array() ? 'VarType' : 'VarName';
+    $decoder->change_state($next_state);
+}
+
+package PHP::Session::Serializer::PHP::State::ClassName;
+use base qw(PHP::Session::Serializer::PHP::State);
+
+sub parse {
+    my($self, $decoder) = @_;
+    my $length = $decoder->pop_stack();
+    $decoder->{buffer} =~ s/^"(.{$length})":(\d+):// or $decoder->weird;
+    $decoder->start_array($2, $1); # $length, $class
+    $decoder->change_state('ArrayStart');
+}
+
 
 1;
 __END__
@@ -235,11 +345,11 @@ PHP::Session::Serializer::PHP - serialize / deserialize PHP session data
 
 =item *
 
-clean up the code!
+Add option to restore PHP object as is.
 
 =item *
 
-Add option to restore PHP object as is.
+Get back PHP array as Perl array?
 
 =back
 

@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.16;
+$VERSION = 0.17;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -117,7 +117,7 @@ sub _parse_session {
     my $self = shift;
     my $cont = $self->_slurp_content;
     if (!$cont && !$self->{create}) {
-	_croak("no session file for ", $self->id);
+	_croak($self->_file_path, ": $!");
     }
     $self->{_data} = $self->decode($cont);
 }

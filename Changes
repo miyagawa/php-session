@@ -1,5 +1,10 @@
 Revision history for Perl extension PHP::Session
 
+0.17  Tue Feb 25 16:43:05 JST 2003
+	* Fixed bug that fails to decode strings with "}" in it
+	  This has made me rewrite decoder code from scratch!
+	* Fixed bug in object encoding
+
 0.16  Mon Feb 24 20:35:20 JST 2003
 	* Fixed bug that encodes strings like "20030224203445" as integer
 	  (Thanks to PIA)
