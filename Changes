@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.09  Fri Jun 28 04:26:31 JST 2002
+	* Fixed bug in newline handling
+	  (Thanks to Lupe Christoph)
+
 0.08  Tue Jun  4 00:08:40 JST 2002
 	* now this module can create session file, with { create => 1 } option
 	  (Thanks to Andy Lester and Thomas Eibner)

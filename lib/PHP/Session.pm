@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.08;
+$VERSION = 0.09;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -21,7 +21,7 @@ sub new {
     my %default = (
 	save_path         => '/tmp',
 	serialize_handler => 'php',
-	create            => ,
+	create            => 0,
     );
     $opt ||= {};
     my $self = bless {

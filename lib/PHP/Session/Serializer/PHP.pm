@@ -33,7 +33,7 @@ use constant BOOLEAN   => 7;
 
 sub decode {
     my($self, $data) = @_;
-    while ($data and $data =~ s/^$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
+    while ($data and $data =~ s/^$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//s) {
 	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
 	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
 	@literal and $self->{_data}->{$match[VARNAME]} = $literal[0], next;
@@ -60,7 +60,7 @@ sub decode {
 
 sub do_decode {
     my($self, $data) = @_;
-    $data =~ s/^{(.*)}$/$1/;
+    $data =~ s/^{(.*)}$/$1/s;
     my @data;
     while ($data and $data =~ s/^($str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
 	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
