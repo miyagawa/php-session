@@ -4,7 +4,9 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = 0.02;
+$VERSION = 0.03;
+
+sub _croak { require Carp; Carp::croak(@_) }
 
 sub new {
     my $class = shift;
@@ -81,6 +83,75 @@ sub do_decode {
 	}
     }
     return @data;
+}
+
+sub encode {
+    my($self, $data) = @_;
+    my $body;
+    for my $key (keys %$data) {
+	$body .= "$key|" . $self->do_encode($data->{$key});
+    }
+    return $body;
+}
+
+sub do_encode {
+    my($self, $value) = @_;
+    if (! defined $value) {
+	return $self->encode_undef($value);
+    }
+    elsif (! ref $value) {
+	if ($value =~ /^\d+$/) {
+	    return $self->encode_int($value);
+	}
+	elsif ($value =~ /^[\d\-\.]+$/) {
+	    return $self->encode_digit($value);
+	}
+	else {
+	    return $self->encode_string($value);
+	}
+    }
+    elsif (ref $value eq 'HASH') {
+	return $self->encode_hash($value);
+    }
+    elsif (ref $value eq 'PHP::Session::Object') {
+	return $self->encode_object($value);
+    }
+    else {
+	_croak("Can't encode ", ref($value));
+    }
+}
+
+sub encode_undef {
+    my($self, $value) = @_;
+    return 'N;';
+}
+
+sub encode_int {
+    my($self, $value) = @_;
+    return sprintf 'i:%d;', $value;
+}
+
+sub encode_digit {
+    my($self, $value) = @_;
+    return sprintf "d:%d;", $value;
+}
+
+sub encode_string {
+    my($self, $value) = @_;
+    return sprintf 's:%d:"%s";', length($value), $value;
+}
+
+sub encode_hash {
+    my($self, $value) = @_;
+    return sprintf 'a:%d:{%s}', 2 * (keys %$value), join('', map $self->do_encode($_), %$value);
+}
+
+sub encode_object {
+    my($self, $value) = @_;
+    my %impl = %$value;
+    my $class = delete $impl{_class};
+    return sprintf 'O:%d:"%s":%d:{%s}', length($class), $class, 2 * (keys %impl),
+	join('', map $self->do_encode($_), %impl);
 }
 
 1;

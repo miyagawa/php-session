@@ -22,16 +22,23 @@ SYNOPSIS
       # check if data is registered
       $session->is_registerd('bar');
 
-      # save session data (*UNIMPLEMENTED*)
+      # save session data
       $session->save;
 
 DESCRIPTION
     PHP::Session provides a way to read / write PHP4 session files, with
-    which you can make your Perl applicatiion session shared with PHP4.
+    which you can make your Perl application session shared with PHP4.
+
+NOTES
+    *   Array in PHP is hash in Perl.
+
+    *   Objects in PHP are deserialized as hash reference, blessed into
+        PHP::Session::Object (Null class).
+
+    *   Locking when save()ing data is acquired via exclusive flock, same as
+        PHP implementation.
 
 TODO
-    *   saving session data into file is UNIMPLEMENTED.
-
     *   WDDX support, using WDDX.pm
 
     *   "Apache::Session::PHP"

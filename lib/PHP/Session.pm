@@ -2,13 +2,14 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.02;
+$VERSION = 0.03;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
     php => 'PHP::Session::Serializer::PHP',
 );
 
+use Fcntl qw(:flock);
 use FileHandle;
 use UNIVERSAL::require;
 
@@ -27,6 +28,7 @@ sub new {
 	_sid  => $sid,
 	_data => {},
     }, $class;
+    $self->_validate_sid;
     $self->_parse_session;
     return $self;
 }
@@ -60,21 +62,38 @@ sub is_registered {
     return exists $self->{_data}->{$key};
 }
 
+sub decode {
+    my($self, $data) = @_;
+    $self->serializer->decode($data);
+}
+
+sub encode {
+    my($self, $data) = @_;
+    $self->serializer->encode($data);
+}
+
 sub save {
-    die 'UNIMPLEMENTED';
+    my $self = shift;
+    my $handle = FileHandle->new("> " . $self->_file_path)
+	or _croak("can't write session file: $!");
+    flock $handle, LOCK_EX;
+    $handle->print($self->encode($self->{_data}));
+    $handle->close;
 }
 
 # private methods
+
+sub _validate_sid {
+    my $self = shift;
+    my($id) = $self->id =~ /^([0-9a-zA-Z]*)$/; # untaint
+    defined $id or _croak("Invalid session id: ", $self->id);
+    $self->{_sid} = $id;
+}
 
 sub _parse_session {
     my $self = shift;
     my $cont = $self->_slurp_content;
     $self->{_data} = $self->decode($cont);
-}
-
-sub decode {
-    my($self, $data) = @_;
-    $self->serializer->decode($data);
 }
 
 sub serializer {
@@ -126,21 +145,37 @@ PHP::Session - read / write PHP session files
   # check if data is registered
   $session->is_registerd('bar');
 
-  # save session data (*UNIMPLEMENTED*)
+  # save session data
   $session->save;
 
 =head1 DESCRIPTION
 
 PHP::Session provides a way to read / write PHP4 session files, with
-which you can make your Perl applicatiion session shared with PHP4.
+which you can make your Perl application session shared with PHP4.
 
-=head1 TODO
+=head1 NOTES
 
 =over 4
 
 =item *
 
-saving session data into file is B<UNIMPLEMENTED>.
+Array in PHP is hash in Perl.
+
+=item *
+
+Objects in PHP are deserialized as hash reference, blessed into
+PHP::Session::Object (Null class).
+
+=item *
+
+Locking when save()ing data is acquired via exclusive flock, same as
+PHP implementation.
+
+=back
+
+=head1 TODO
+
+=over 4
 
 =item *
 

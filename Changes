@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.03
+	* added session ID validation
+	* implemented save()
+
 0.02  Thu Mar 14 04:37:39 JST 2002
 	- added UNIVERSAL::require as PREREQ_PM
 
