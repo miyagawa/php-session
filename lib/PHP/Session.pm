@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.07;
+$VERSION = 0.08;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -21,6 +21,7 @@ sub new {
     my %default = (
 	save_path         => '/tmp',
 	serialize_handler => 'php',
+	create            => ,
     );
     $opt ||= {};
     my $self = bless {
@@ -99,6 +100,9 @@ sub _validate_sid {
 sub _parse_session {
     my $self = shift;
     my $cont = $self->_slurp_content;
+    if (!$cont && !$self->{create}) {
+	_croak("no session file for ", $self->id);
+    }
     $self->{_data} = $self->decode($cont);
 }
 
@@ -116,8 +120,7 @@ sub _file_path {
 
 sub _slurp_content {
     my $self = shift;
-    my $handle = FileHandle->new($self->_file_path)
-	or _croak("session file not found: $!");
+    my $handle = FileHandle->new($self->_file_path) or return;
     local $/ = undef;
     return scalar <$handle>;
 }
@@ -156,6 +159,9 @@ PHP::Session - read / write PHP session files
 
   # destroy session
   $session->destroy;
+
+  # create session file, if not existent
+  $session = PHP::Session->new($new_sid, { create => 1 });
 
 =head1 DESCRIPTION
 
