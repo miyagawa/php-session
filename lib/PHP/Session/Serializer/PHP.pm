@@ -2,7 +2,7 @@ package PHP::Session::Serializer::PHP;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.19;
+$VERSION = q(0.20);
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -275,7 +275,7 @@ package PHP::Session::Serializer::PHP::State::String;
 sub parse {
     my($self, $decoder) = @_;
     my $length = $decoder->pop_stack();
-    $decoder->{buffer} =~ s/^"(.{$length})";// or $decoder->weird;
+    $decoder->{buffer} =~ s/^"(.{$length})";//s or $decoder->weird;
     $decoder->process_value($1);
 }
 

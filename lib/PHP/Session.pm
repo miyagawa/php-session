@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.19;
+$VERSION = q(0.20);
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -213,7 +213,7 @@ whether to save modification to session file automatically. default: 0
 Consider cases like this:
 
   my $session = PHP::Session->new($sid, { auto_save => 1 });
-  $session->param(foo => 'bar');
+  $session->set(foo => 'bar');
 
   # Oops, you forgot save() method!
 

@@ -1,5 +1,8 @@
 Revision history for Perl extension PHP::Session
 
+0.20
+	- Minor pod fix
+
 0.19  Tue Feb 25 19:21:10 JST 2003
 	- Optimized decoder using static method
 

@@ -15,5 +15,9 @@ t/07_int_double.t
 t/08_auto_save.t
 t/09_int_str.t
 t/10_quote.t
+t/11_bracket.t
+t/12_newline.t
 t/lib/TestUtil.pm
+t/sess_bracket
+t/sess_newline
 t/sess_quote
