@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 22;
+use Test::More tests => 24;
 
 use lib 't/lib';
 use TestUtil;
@@ -7,7 +7,7 @@ use TestUtil;
 use PHP::Session;
 
 chomp(my $sess = <<'SESSION');
-baz|O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}arr|a:1:{i:3;O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}}
+baz|O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}arr|a:1:{i:3;O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}}!foo|
 SESSION
     ;
 
@@ -32,10 +32,12 @@ write_file('t/sess_1234', $sess);
     is $arr->{3}->{bar}, 'ok';
     is $arr->{3}->{yes}, 'done';
     $session->destroy;
+
+    is $session->get('foo'), undef, 'foo is undef';
 }
 
 chomp(my $sess2 = <<'SESSION');
-count|i:2;c|i:12;a|a:4:{i:1;s:3:"foo";i:2;O:3:"baz":0:{}i:3;s:3:"bar";i:4;d:-1.2;}d|N;
+count|i:2;c|i:12;!foo|a|a:4:{i:1;s:3:"foo";i:2;O:3:"baz":0:{}i:3;s:3:"bar";i:4;d:-1.2;}d|N;
 SESSION
     ;
 write_file('t/sess_abcd', $sess2);
@@ -48,6 +50,8 @@ write_file('t/sess_abcd', $sess2);
 
     is $session->get('count'), 2;
     is $session->get('c'), 12;
+    is $session->get('foo'), undef, 'foo is undef';
+
     my $arr = $session->get('a');
     is ref($arr), 'HASH';
     is $arr->{1}, 'foo';

@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.10  Mon Jul  1 18:26:54 JST 2002
+	* correctly encode/decode undefined value in PHP
+	  (Thanks to Lupe Christoph)
+
 0.09  Fri Jun 28 04:26:31 JST 2002
 	* Fixed bug in newline handling
 	  (Thanks to Lupe Christoph)

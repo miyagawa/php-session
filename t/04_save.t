@@ -9,7 +9,7 @@ use PHP::Session;
 my @sessions;
 
 chomp(my $sess = <<'SESSION');
-baz|O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}arr|a:1:{i:3;O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}}
+baz|O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}arr|a:1:{i:3;O:3:"foo":2:{s:3:"bar";s:2:"ok";s:3:"yes";s:4:"done";}}!foo|
 SESSION
     ;
 
@@ -19,7 +19,7 @@ push @sessions, {
 };
 
 chomp(my $sess2 = <<'SESSION');
-count|i:2;c|i:12;a|a:4:{i:1;s:3:"foo";i:2;O:3:"baz":0:{}i:3;s:3:"bar";i:4;d:-1.2;}d|N;
+count|i:2;c|i:12;!foo|a|a:4:{i:1;s:3:"foo";i:2;O:3:"baz":0:{}i:3;s:3:"bar";i:4;d:-1.2;}d|N;
 SESSION
     ;
 

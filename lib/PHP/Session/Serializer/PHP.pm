@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = 0.07;
+$VERSION = '0.10';
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -33,12 +33,13 @@ use constant BOOLEAN   => 7;
 
 sub decode {
     my($self, $data) = @_;
-    while ($data and $data =~ s/^$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//s) {
-	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
+    while ($data and $data =~ s/^(!?)$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)?//s) {
+	my $UNDEF = $1;
+	my @match = ($2, $3, $4, $5, $6, $7, $8, $9);
 	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
 	@literal and $self->{_data}->{$match[VARNAME]} = $literal[0], next;
 
-	if (defined $match[NULL]) {
+	if ($UNDEF eq '!' or defined $match[NULL]) {
 	    $self->{_data}->{$match[VARNAME]} = undef;
 	    next;
 	}
@@ -91,7 +92,11 @@ sub encode {
     my($self, $data) = @_;
     my $body;
     for my $key (keys %$data) {
-	$body .= "$key|" . $self->do_encode($data->{$key});
+	if (defined $data->{$key}) {
+	    $body .= "$key|" . $self->do_encode($data->{$key});
+	} else {
+	    $body .= "!$key|";
+    	}
     }
     return $body;
 }
