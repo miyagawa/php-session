@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -154,7 +154,7 @@ sub encode_string {
 sub encode_array {
     my($self, $value) = @_;
     my %array = ref $value eq 'HASH' ? %$value : map { $_ => $value->[$_] } 0..$#{$value};
-    return sprintf 'a:%d:{%s}', 2 * (keys %array), join('', map $self->do_encode($_), %array);
+    return sprintf 'a:%d:{%s}', scalar(keys %array), join('', map $self->do_encode($_), %array);
 }
 
 sub encode_object {

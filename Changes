@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.11  Wed Jul 10 05:23:19 JST 2002
+	* Fixed bug in hash/array serialization
+	  (Thanks to Pasha Sadri and Thai Tran)
+
 0.10  Mon Jul  1 18:26:54 JST 2002
 	* correctly encode/decode undefined value in PHP
 	  (Thanks to Lupe Christoph)
