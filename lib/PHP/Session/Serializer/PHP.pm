@@ -2,7 +2,7 @@ package PHP::Session::Serializer::PHP;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.17;
+$VERSION = 0.18;
 
 sub _croak { require Carp; Carp::croak(@_) }
 

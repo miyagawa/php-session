@@ -1,5 +1,8 @@
 Revision history for Perl extension PHP::Session
 
+0.18  Tue Feb 25 18:42:40 JST 2003
+	- Fixed test fails due to 5.8 MakeMaker bug (warnings disabled by default)
+
 0.17  Tue Feb 25 16:43:05 JST 2003
 	* Fixed bug that fails to decode strings with "}" in it
 	  This has made me rewrite decoder code from scratch!

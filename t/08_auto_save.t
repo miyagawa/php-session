@@ -1,6 +1,8 @@
 use PHP::Session;
 use Test::More tests => 4;
 
+local $^W = 1; # for 5.8 MakeMaker bug
+
 my $warn;
 $SIG{__WARN__} = sub { $warn .= "@_" };
 
