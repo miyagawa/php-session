@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.06;
+$VERSION = 0.07;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -11,6 +11,7 @@ use vars qw(%SerialImpl);
 
 use Fcntl qw(:flock);
 use FileHandle;
+use File::Spec;
 use UNIVERSAL::require;
 
 sub _croak { require Carp; Carp::croak(@_) }
@@ -110,7 +111,7 @@ sub serializer {
 
 sub _file_path {
     my $self = shift;
-    return $self->{save_path} . '/sess_' . $self->id;
+    return File::Spec->catfile($self->{save_path}, 'sess_' . $self->id);
 }
 
 sub _slurp_content {
@@ -194,10 +195,6 @@ Not tested so much, thus there may be a lot of bug in
 
 WDDX support, using WDDX.pm
 
-=item *
-
-C<Apache::Session::PHP>
-
 =back
 
 =head1 AUTHOR
@@ -209,6 +206,6 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<WDDX>, L<Apache::Session>, L<CGI::kSession>
+L<Apache::Session::PHP>, L<WDDX>, L<Apache::Session>, L<CGI::kSession>
 
 =cut

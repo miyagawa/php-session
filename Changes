@@ -1,5 +1,8 @@
 Revision history for Perl extension PHP::Session
 
+0.07  Sat Apr  6 17:44:38 JST 2002
+	- uses File::Spec for portablity
+
 0.06  Wed Mar 27 01:57:06 JST 2002
 	* exposed Serializer API
 	* Added encoding: Perl array => PHP array
