@@ -1,7 +1,17 @@
 Revision history for Perl extension PHP::Session
 
-0.20
+0.22  Sun Oct  5 05:33:32 JST 2003
+	* Fixed bug that it fails to decode strings longer than 32766 bytes
+	  (https://rt.cpan.org/Ticket/Display.html?id=3970)
+
+0.21  Wed Oct  1 08:19:55 JST 2003
+	* Fixed bug that it decodes "0123" as integer 123.
+	  (https://rt.cpan.org/Ticket/Display.html?id=3917)
+
+0.20  Tue Apr 15 13:15:36 JST 2003
 	- Minor pod fix
+	* Fixed bug which fails to decode session data with "\n" in it
+	  (Thanks to Andy Lester)
 
 0.19  Tue Feb 25 19:21:10 JST 2003
 	- Optimized decoder using static method

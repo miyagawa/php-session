@@ -2,7 +2,7 @@ package PHP::Session::Serializer::PHP;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = q(0.20);
+$VERSION = 0.22;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -98,12 +98,12 @@ sub encode_object {
 
 sub is_int {
     local $_ = shift;
-    /^-?[0-9]\d{0,8}$/;
+    /^-?(0|[1-9]\d{0,8})$/;
 }
 
 sub is_float {
     local $_ = shift;
-    /^-?[0-9]\d{0,8}\.\d+$/;
+    /^-?(0|[1-9]\d{0,8})\.\d+$/;
 }
 
 # decoder starts here
@@ -275,8 +275,12 @@ package PHP::Session::Serializer::PHP::State::String;
 sub parse {
     my($self, $decoder) = @_;
     my $length = $decoder->pop_stack();
-    $decoder->{buffer} =~ s/^"(.{$length})";//s or $decoder->weird;
-    $decoder->process_value($1);
+
+    # .{$length} has a limit on length
+    # $decoder->{buffer} =~ s/^"(.{$length})";//s or $decoder->weird;
+    my $value = substr($decoder->{buffer}, 0, $length + 3, "");
+    $value =~ s/^"// and $value =~ s/";$// or $decoder->weird;
+    $decoder->process_value($value);
 }
 
 package PHP::Session::Serializer::PHP::State::ArrayStart;
@@ -305,8 +309,11 @@ package PHP::Session::Serializer::PHP::State::ClassName;
 sub parse {
     my($self, $decoder) = @_;
     my $length = $decoder->pop_stack();
-    $decoder->{buffer} =~ s/^"(.{$length})":(\d+):// or $decoder->weird;
-    $decoder->start_array($2, $1); # $length, $class
+#    $decoder->{buffer} =~ s/^"(.{$length})":(\d+):// or $decoder->weird;
+    my $value = substr($decoder->{buffer}, 0, $length + 3, "");
+    $value =~ s/^"// and $value =~ s/":$// or $decoder->weird;
+    $decoder->{buffer} =~ s/^(\d+):// or $decoder->weird;
+    $decoder->start_array($1, $value); # $length, $class
     $decoder->change_state('ArrayStart');
 }
 

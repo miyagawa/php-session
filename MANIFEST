@@ -1,9 +1,10 @@
 Changes
-MANIFEST
-Makefile.PL
-README
 lib/PHP/Session.pm
 lib/PHP/Session/Serializer/PHP.pm
+Makefile.PL
+MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
+README
 t/00_compile.t
 t/01_deserialize.t
 t/02_validate.t
@@ -17,6 +18,7 @@ t/09_int_str.t
 t/10_quote.t
 t/11_bracket.t
 t/12_newline.t
+t/13_length.t
 t/lib/TestUtil.pm
 t/sess_bracket
 t/sess_newline

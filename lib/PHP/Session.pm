@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = q(0.20);
+$VERSION = 0.22;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
