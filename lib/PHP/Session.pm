@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.14;
+$VERSION = 0.15;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -15,6 +15,7 @@ use File::Spec;
 use UNIVERSAL::require;
 
 sub _croak { require Carp; Carp::croak(@_) }
+sub _carp  { require Carp; Carp::carp(@_) }
 
 sub new {
     my($class, $sid, $opt) = @_;
@@ -22,6 +23,7 @@ sub new {
 	save_path         => '/tmp',
 	serialize_handler => 'php',
 	create            => 0,
+	auto_save         => 0,
     );
     $opt ||= {};
     my $self = bless {
@@ -29,6 +31,7 @@ sub new {
 	%$opt,
 	_sid  => $sid,
 	_data => {},
+	_changed => 0,
     }, $class;
     $self->_validate_sid;
     $self->_parse_session;
@@ -46,6 +49,7 @@ sub get {
 
 sub set {
     my($self, $key, $value) = @_;
+    $self->{_changed}++;
     $self->{_data}->{$key} = $value;
 }
 
@@ -81,11 +85,23 @@ sub save {
     flock $handle, LOCK_EX;
     $handle->print($self->encode($self->{_data}));
     $handle->close;
+    $self->{_changed} = 0;	# init
 }
 
 sub destroy {
     my $self = shift;
     unlink $self->_file_path;
+}
+
+sub DESTROY {
+    my $self = shift;
+    if ($self->{_changed}) {
+	if ($self->{auto_save}) {
+	    $self->save;
+	} else {
+	    _carp("PHP::Session: some keys are changed but not saved.") if $^W;
+	}
+    }
 }
 
 # private methods
@@ -189,6 +205,26 @@ serialization is supported.
 =item create
 
 whether to create session file, if it's not existent yet. default: 0
+
+=item auto_save
+
+whether to save modification to session file automatically. default: 0
+
+Consider cases like this:
+
+  my $session = PHP::Session->new($sid, { auto_save => 1 });
+  $session->param(foo => 'bar');
+
+  # Oops, you forgot save() method!
+
+If you set C<auto_save> to true value and when you forget to call
+C<save> method after parameter modification, this module would save
+session file automatically when session object goes out of scope.
+
+If you set it to 0 (default) and turn warnings on, this module would
+give you a warning like:
+
+  PHP::Session: some keys are changed but not modified.
 
 =back
 

@@ -1,5 +1,8 @@
 Revision history for Perl extension PHP::Session
 
+0.15  Tue Jan 28 23:22:38 JST 2003
+	* Added new auto_save option in constructor
+
 0.14  Wed Sep 18 17:02:16 JST 2002
 	* Fixed bug that "." is not encoded properly
 	  (Thanks to Tony Mattila)	
