@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.04;
+$VERSION = 0.05;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -148,7 +148,7 @@ PHP::Session - read / write PHP session files
   $session->unset;
 
   # check if data is registered
-  $session->is_registerd('bar');
+  $session->is_registered('bar');
 
   # save session data
   $session->save;
@@ -171,12 +171,12 @@ Array in PHP is hash in Perl.
 
 =item *
 
-Objects in PHP are deserialized as hash reference, blessed into
+Objects in PHP are restrored as objects blessed into
 PHP::Session::Object (Null class).
 
 =item *
 
-Locking when save()ing data is acquired via exclusive flock, same as
+Locking when save()ing data is acquired via exclusive C<flock>, same as
 PHP implementation.
 
 =item *

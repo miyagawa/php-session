@@ -1,5 +1,8 @@
 Revision history for Perl extension PHP::Session
 
+0.05  Mon Mar 18 16:36:27 JST 2002
+	* added Boolean type (ext/var.h in PHP source code)
+
 0.04  Fri Mar 15 16:14:32 JST 2002
 	* added destroy()
 

@@ -4,7 +4,7 @@ use strict;
 use Text::Balanced qw(extract_bracketed);
 
 use vars qw($VERSION);
-$VERSION = 0.04;
+$VERSION = 0.05;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -14,26 +14,28 @@ sub new {
 }
 
 my $var_re = '(\w+)\|';
-my $str_re = 's:\d+:"(.*?)"\;';
+my $str_re = 's:\d+:"(.*?)";';
 my $int_re = 'i:(\d+);';
-my $dig_re = 'd:([\-\d\.]+);';
+my $dbl_re = 'd:([\-\d\.]+);';
 my $arr_re = 'a:(\d+):';
 my $obj_re = 'O:\d+:"(.*?)":\d+:';
 my $nul_re = '(N);';
+my $bool_re = 'b:([01]);';
 
 use constant VARNAME   => 0;
 use constant STRING    => 1;
 use constant INTEGER   => 2;
-use constant DIGIT     => 3;
+use constant DOUBLE    => 3;
 use constant ARRAY     => 4;
 use constant CLASSNAME => 5;
 use constant NULL      => 6;
+use constant BOOLEAN   => 7;
 
 sub decode {
     my($self, $data) = @_;
-    while ($data =~ s/^$var_re(?:$str_re|$int_re|$dig_re|$arr_re|$obj_re|$nul_re)//) {
-	my @match = ($1, $2, $3, $4, $5, $6, $7);
-	my @literal = grep defined, @match[STRING, INTEGER, DIGIT];
+    while ($data =~ s/^$var_re(?:$str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
+	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
+	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
 	@literal and $self->{_data}->{$match[VARNAME]} = $literal[0], next;
 
 	if (defined $match[NULL]) {
@@ -60,9 +62,9 @@ sub do_decode {
     my($self, $data) = @_;
     $data =~ s/^{(.*)}$/$1/;
     my @data;
-    while ($data =~ s/^($str_re|$int_re|$dig_re|$arr_re|$obj_re)//) {
-	my @match = ($1, $2, $3, $4, $5, $6, $7);
-	my @literal = grep defined, @match[STRING, INTEGER, DIGIT];
+    while ($data =~ s/^($str_re|$int_re|$dbl_re|$arr_re|$obj_re|$nul_re|$bool_re)//) {
+	my @match = ($1, $2, $3, $4, $5, $6, $7, $8);
+	my @literal = grep defined, @match[STRING, INTEGER, DOUBLE, BOOLEAN];
 	@literal and push @data, $literal[0] and next;
 
 	if (defined $match[NULL]) {
@@ -97,21 +99,21 @@ sub encode {
 sub do_encode {
     my($self, $value) = @_;
     if (! defined $value) {
-	return $self->encode_undef($value);
+	return $self->encode_null($value);
     }
     elsif (! ref $value) {
 	if ($value =~ /^\d+$/) {
 	    return $self->encode_int($value);
 	}
 	elsif ($value =~ /^[\d\-\.]+$/) {
-	    return $self->encode_digit($value);
+	    return $self->encode_double($value);
 	}
 	else {
 	    return $self->encode_string($value);
 	}
     }
     elsif (ref $value eq 'HASH') {
-	return $self->encode_hash($value);
+	return $self->encode_array($value);
     }
     elsif (ref $value eq 'PHP::Session::Object') {
 	return $self->encode_object($value);
@@ -121,7 +123,7 @@ sub do_encode {
     }
 }
 
-sub encode_undef {
+sub encode_null {
     my($self, $value) = @_;
     return 'N;';
 }
@@ -131,7 +133,7 @@ sub encode_int {
     return sprintf 'i:%d;', $value;
 }
 
-sub encode_digit {
+sub encode_double {
     my($self, $value) = @_;
     return sprintf "d:%d;", $value;
 }
@@ -141,7 +143,7 @@ sub encode_string {
     return sprintf 's:%d:"%s";', length($value), $value;
 }
 
-sub encode_hash {
+sub encode_array {
     my($self, $value) = @_;
     return sprintf 'a:%d:{%s}', 2 * (keys %$value), join('', map $self->do_encode($_), %$value);
 }
