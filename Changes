@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.23  Thu Apr 14 10:28:06 JST 2005
+	- Added binmode $handle for Win32 platform
+	  (Thanks to Carl Stehle)
+
 0.22  Sun Oct  5 05:33:32 JST 2003
 	* Fixed bug that it fails to decode strings longer than 32766 bytes
 	  (https://rt.cpan.org/Ticket/Display.html?id=3970)
