@@ -1,5 +1,13 @@
 Revision history for Perl extension PHP::Session
 
+0.25  Tue Aug 23 22:13:33 UTC 2005
+        - Documentation improvement
+          http://www.perlmonks.org/?node_id=429647
+
+0.24  Thu Jul  6 20:21:24 PDT 2005
+        - Addded 'R' and 'r' decoding (reference count?)
+          (Thanks to Carl Stehle)
+
 0.23  Thu Apr 14 10:28:06 JST 2005
 	- Added binmode $handle for Win32 platform
 	  (Thanks to Carl Stehle)

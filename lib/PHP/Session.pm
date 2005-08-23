@@ -2,7 +2,7 @@ package PHP::Session;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.23;
+$VERSION = 0.25;
 
 use vars qw(%SerialImpl);
 %SerialImpl = (
@@ -228,6 +228,27 @@ give you a warning like:
   PHP::Session: some keys are changed but not modified.
 
 =back
+
+=head1 EXAMPLE
+
+  use strict;
+  use PHP::Session;
+  use CGI::Lite;
+  my $session_name = 'PHPSESSID'; # change this if needed
+
+  print "Content-type: text/plain\n\n";
+  
+  my $cgi = new CGI::Lite;
+  
+  my $cookies = $cgi->parse_cookies;
+  if ($cookies->{$session_name}) {
+     my $session = PHP::Session->new($cookies->{$session_name});
+     # now, try to print uid variable from PHP session
+     print "uid:",Dumper($session->get('uid'));
+  } else {
+     print "can't find session cookie $session_name";
+  }
+
 
 =head1 NOTES
 
