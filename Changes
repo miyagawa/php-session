@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.26  Thu Oct  6 02:30:52 UTC 2005
+        - Fixed the support for reference cound and added tests for that
+          (Thanks to Carl Stehle)
+
 0.25  Tue Aug 23 22:13:33 UTC 2005
         - Documentation improvement
           http://www.perlmonks.org/?node_id=429647

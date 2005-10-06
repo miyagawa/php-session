@@ -19,7 +19,9 @@ t/10_quote.t
 t/11_bracket.t
 t/12_newline.t
 t/13_length.t
+t/14_refcnt.t
 t/lib/TestUtil.pm
 t/sess_bracket
 t/sess_newline
 t/sess_quote
+t/sess_refcnt

@@ -2,7 +2,7 @@ package PHP::Session::Serializer::PHP;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = 0.24;
+$VERSION = 0.26;
 
 sub _croak { require Carp; Carp::croak(@_) }
 
@@ -268,6 +268,9 @@ sub parse {
     }
     elsif (defined $7) {	# boolean
 	$decoder->process_value($7);
+    }
+    elsif (defined $8) {        # reference
+        $decoder->process_value($8);
     }
 }
 
