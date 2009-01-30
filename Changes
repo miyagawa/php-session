@@ -1,5 +1,9 @@
 Revision history for Perl extension PHP::Session
 
+0.27  Fri Jan 30 11:36:59 PST 2009
+        - Added a shared lock when reading a session file
+          (Thanks to Gergeley Soos)
+
 0.26  Thu Oct  6 02:30:52 UTC 2005
         - Fixed the support for reference cound and added tests for that
           (Thanks to Carl Stehle)

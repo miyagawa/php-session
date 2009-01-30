@@ -1,3 +1,4 @@
+.shipit
 Changes
 lib/PHP/Session.pm
 lib/PHP/Session/Serializer/PHP.pm

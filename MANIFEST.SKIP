@@ -9,3 +9,5 @@
 ^MakeMaker-\d
 \.gz$
 \.cvsignore
+.git/
+.gitignore
