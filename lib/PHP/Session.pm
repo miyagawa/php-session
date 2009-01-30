@@ -136,10 +136,15 @@ sub _file_path {
 
 sub _slurp_content {
     my $self = shift;
+
     my $handle = FileHandle->new($self->_file_path) or return;
     binmode $handle;
+    flock $handle, LOCK_SH;
     local $/ = undef;
-    return scalar <$handle>;
+    my $data = <$handle>;
+    $handle->close;
+
+    return $data;
 }
 
 1;
