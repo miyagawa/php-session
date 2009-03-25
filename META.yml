@@ -1,12 +1,23 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         PHP-Session
-version:      0.23
-version_from: lib/PHP/Session.pm
-installdirs:  site
-requires:
-    Test::More:                    0.32
-    UNIVERSAL::require:            0.03
-
+---
+abstract: 'read / write PHP session files'
+author:
+  - 'Tatsuhiko Miyagawa <miyagawa@bulknews.net>'
 distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+generated_by: 'Module::Install version 0.79'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: PHP-Session
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Test::More: 0
+  UNIVERSAL::require: 0
+  perl: 5.8.1
+resources:
+  license: http://dev.perl.org/licenses/
+  repository: git://github.com/miyagawa/php-session.git
+version: 0.27

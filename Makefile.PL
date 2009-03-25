@@ -1,9 +1,8 @@
-use ExtUtils::MakeMaker;
-WriteMakefile(
-    'NAME'      => 'PHP::Session',
-    'VERSION_FROM' => 'lib/PHP/Session.pm', # finds $VERSION
-    'PREREQ_PM' => {
-	Test::More => 0.32,
-	UNIVERSAL::require => 0.03,
-    },
-);
+use inc::Module::Install;
+name 'PHP-Session';
+all_from "lib/PHP/Session.pm";
+requires 'Test::More';
+requires 'UNIVERSAL::require';
+auto_set_repository;
+auto_include;
+WriteAll;

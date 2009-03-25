@@ -1,5 +1,5 @@
 package PHP::Session;
-
+use 5.008_001;
 use strict;
 use vars qw($VERSION);
 $VERSION = '0.27';
@@ -294,6 +294,8 @@ WDDX support, using WDDX.pm
 =head1 AUTHOR
 
 Tatsuhiko Miyagawa E<lt>miyagawa@bulknews.netE<gt>
+
+=head1 LICENSE
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
