@@ -7,6 +7,7 @@ $VERSION = '0.27';
 use vars qw(%SerialImpl);
 %SerialImpl = (
     php => 'PHP::Session::Serializer::PHP',
+    phpurlencoded => 'PHP::Session::Serializer::PHPurlencoded',
 );
 
 use Fcntl qw(:flock);
